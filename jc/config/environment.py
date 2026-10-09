@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     """Application settings from environment"""
 
     # Server
-    HOST: str = "0.0.0.0"
+    HOST: str = "127.0.0.1"
     PORT: int = 8000
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
