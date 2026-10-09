@@ -17,6 +17,7 @@
     <label><span class="muted">Backend address</span><input id="apiBase" value="http://127.0.0.1:8000" autocomplete="url"></label>
     <label><span class="muted">Reply language</span><select id="language"><option value="English">English</option><option value="Hindi">हिन्दी</option><option value="Odia">ଓଡ଼ିଆ</option></select></label>
     <button id="connect" class="primary" type="button">Connect</button>
+    <label style="grid-column:1/-1"><span class="muted">AI model (configure its key or local service on the backend)</span><select id="model"><option value="gemini-2.5-flash">Gemini 2.5 Flash</option><option value="gpt-4o-mini">OpenAI GPT-4o mini</option><option value="ollama:llama3.2">Local Ollama · llama3.2</option></select></label>
     <div id="status" class="state" role="status" aria-live="polite" style="grid-column:1/-1">Not connected. Start the JC backend, then connect.</div>
   </section>
   <section id="chat" class="chat" aria-label="Conversation" aria-live="polite">
@@ -164,7 +165,7 @@
     try {
       const result = await request("/api/inference/", {
         method: "POST",
-        body: JSON.stringify({ session_id: sessionId, prompt: message, model: "gemini-2.5-flash" }),
+        body: JSON.stringify({ session_id: sessionId, prompt: message, model: $("model").value }),
       });
       if (typeof result.response !== "string" || !result.response.trim()) throw new Error("JC returned an empty response.");
       addMessage("assistant", result.response);
