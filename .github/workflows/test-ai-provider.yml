@@ -6,8 +6,10 @@ on:
       - "jc/core/ai_provider.py"
       - "jc/database/models.py"
       - "jc/core/agent_planner.py"
+      - "jc/api/routes/tasks.py"
       - "tests/test_ai_provider.py"
       - "tests/test_agent_planner.py"
+      - "tests/test_task_execution_safety.py"
       - "tests/test_database_models.py"
       - ".github/workflows/test-ai-provider.yml"
   push:
@@ -26,6 +28,6 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install focused test dependencies
-        run: python -m pip install --upgrade pip pytest requests sqlalchemy pydantic-settings
+        run: python -m pip install --upgrade pip pytest requests sqlalchemy pydantic-settings fastapi
       - name: Run provider adapter tests
-        run: python -m pytest tests/test_ai_provider.py tests/test_database_models.py tests/test_agent_planner.py -v
+        run: python -m pytest tests/test_ai_provider.py tests/test_database_models.py tests/test_agent_planner.py tests/test_task_execution_safety.py -v
