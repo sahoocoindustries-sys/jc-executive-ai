@@ -1,89 +1,73 @@
 # JC Executive AI
-## Production-Grade Personal AI Operating System
 
-**Status:** Master Completion in Progress
+JC is a local-first personal AI workspace under active development. This repository contains a FastAPI backend, SQLite persistence, a browser chat interface, and a supervised AI task planner. The complete autonomous agent vision is not implemented yet; see the capability boundaries below.
 
-JC is a real Personal AI Operating System and Executive AI Agent built from integrated Phases 1-31.
+## Run on Windows (recommended: Docker Desktop)
 
-### Core Capabilities
+1. Install Docker Desktop and start it.
+2. Clone this repository and open PowerShell in the project folder.
+3. Copy `.env.example` to `.env` and add your own `GEMINI_API_KEY` (or configure `OPENAI_API_KEY`). Never commit `.env` or put a key in frontend code.
+4. Run:
 
-- 🗣️ **Real-time Conversation** - Text, voice, multimodal interaction
-- 🧠 **Memory & Cognition** - Semantic memory, knowledge graphs, context intelligence
-- 📋 **Planning & Execution** - Multi-step task orchestration, subtask management
-- 🎯 **Goal Intelligence** - Strategic planning, OKRs, milestone tracking
-- 🤖 **Autonomous Action** - Bounded autonomy, safety controls, governance
-- 🔐 **Security** - Zero-Trust authorization, identity, secrets management
-- 📊 **Observability** - Audit logging, metrics, anomaly detection
-- 💾 **Disaster Recovery** - Backup, restore, integrity verification
-- 🌊 **Real-time Streaming** - Event processing, WebSockets, background workers
-- 🛠️ **Tool Integration** - Governed tool calling, external APIs, webhooks
+       docker compose up --build -d
+       docker compose ps
 
-### Quick Start
+5. Open `http://127.0.0.1:8000/web/chat.html` and click **Connect**.
+6. Use **Send** for chat or **Plan task** to create an approval-gated task plan.
+7. View logs with `docker compose logs -f jc`; stop with `docker compose down`.
 
-```bash
-git clone https://github.com/sahoocoindustries-sys/jc-executive-ai.git
-cd jc-executive-ai
+The Compose port binds to loopback only. Do not expose this backend publicly: authentication and production deployment hardening are not complete.
 
-# Install dependencies
-pip install -r requirements.txt
+## Run directly with Python 3.11+
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your API keys
+PowerShell at the repository root:
 
-# Initialize database
-python -m jc database init
+       py -3.11 -m venv .venv
+       .venv\\Scripts\\Activate.ps1
+       python -m pip install -r requirements.txt
+       Copy-Item .env.example .env
 
-# Validate production readiness
-python -m jc production validate
+Edit `.env`, then start the server:
 
-# Start JC
-python -m jc start
-```
+       python -m uvicorn jc.api.main:app --host 127.0.0.1 --port 8000
 
-### Architecture
+Open `http://127.0.0.1:8000/web/chat.html`.
 
-JC integrates across:
+## What works in this build
 
-- **Foundation** - Config, providers (OpenAI, Gemini, Ollama), persistence
-- **Execution** - Task orchestration, workflows, project management
-- **Multi-Agent** - Specialist agents, coordinator, distributed execution
-- **Memory & Knowledge** - Semantic memory, knowledge graphs, context
-- **Planning & Intelligence** - Executive planner, decision intelligence, goals
-- **Autonomy & Safety** - Bounded autonomy, approval workflows, emergency stop
-- **Real-time Runtime** - Event streaming, workers, WebSockets
-- **Voice** - STT, TTS, VAD, barge-in, multimodal fusion
-- **Security & Governance** - Zero-Trust auth, secrets, policies, audit
-- **Reliability & Operations** - Metrics, SLOs, anomaly detection, self-healing
-- **Disaster Recovery** - Backup/restore, integrity, rollback
-- **Production** - Health checks, deployment gates, canary routing
+- Real text inference through configured Gemini, OpenAI, or Ollama providers.
+- Conversation sessions and messages persisted in the configured SQLAlchemy database.
+- Structured agent planning that produces up to eight specialist-assigned steps and saves them as a task with `pending_approval` status.
+- Plan validation, basic provider error handling, and automated unit/regression tests.
+- Local chat UI with model selection, English/Hindi/Odia response-language selection, conversation restoration, and plan-task action.
 
-### Documentation
+## What is not implemented yet
 
-- [MASTER_ARCHITECTURE.md](MASTER_ARCHITECTURE.md) - Complete system design
-- [PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md) - Deployment guide
-- [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) - Readiness criteria
-- [OPERATIONS_RUNBOOK.md](OPERATIONS_RUNBOOK.md) - Operational procedures
-- [DISASTER_RECOVERY_RUNBOOK.md](DISASTER_RECOVERY_RUNBOOK.md) - Recovery procedures
-- [SECURITY_MODEL.md](SECURITY_MODEL.md) - Security architecture
-- [AUTONOMY_SAFETY_MODEL.md](AUTONOMY_SAFETY_MODEL.md) - Autonomy constraints
+Planning is not execution. The app does not yet have a governed tool registry or a real multi-agent runtime. Live web research, GitHub writes, Netlify deployment, Windows desktop automation, voice conversation, recurring 24/7 jobs, bank/payment integrations, production authentication, and a production cloud deployment remain future work. Some existing endpoints are scaffolding and must not be treated as proof that these features work.
 
-### Health & Validation
+## API quick reference
 
-```bash
-# Check system health
-curl http://localhost:8000/api/health
+- `GET /api/health/` — basic health response
+- `POST /api/sessions/` — create a conversation session
+- `GET /api/sessions/{session_id}/messages` — load saved messages
+- `POST /api/inference/` — request a model response
+- `POST /api/agent/plan` — create and save an approval-gated plan
+- `GET /docs` — FastAPI interactive API docs
 
-# Validate production readiness
-python -m jc production readiness
+## Tests
 
-# Test provider connectivity
-python -m jc production validate
+       python -m pip install pytest requests sqlalchemy pydantic-settings
+       python -m pytest tests/ -v
 
-# Run full test suite
-python -m pytest tests/ -v
-```
+GitHub Actions also runs the focused provider, database mapping, and planner validation tests. Review the latest checks on the pull request before merging.
 
-### License
+## Safety and cost
 
-MIT
+- Keep the backend local until authentication and authorization are implemented.
+- Store provider keys in `.env` or server environment variables only; do not commit secrets.
+- Review any generated plan before approving future execution features.
+- AI provider calls may incur charges; the app does not currently calculate exact per-request cost.
+
+## Project status
+
+This is an incremental MVP, not a production-ready AGI or fully autonomous system. Build and runtime checks must pass before deployment or merging.
