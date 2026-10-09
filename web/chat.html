@@ -26,6 +26,7 @@
   <form id="composer" class="composer">
     <textarea id="prompt" rows="2" placeholder="Tell JC what you need… (Ctrl+Enter to send)" maxlength="30000" required disabled></textarea>
     <button id="send" class="primary" type="submit" disabled>Send ↗</button>
+    <button id="planTask" type="button" disabled>Plan task</button>
   </form>
   <footer class="foot"><span class="note">AI calls may incur provider charges. Keep API keys on the backend only.</span><span class="note">Use a trusted local backend only: this API currently has no user authentication.</span></footer>
 </main>
@@ -37,6 +38,7 @@
   const chat = $("chat");
   const promptInput = $("prompt");
   const sendButton = $("send");
+  const planButton = $("planTask");
   const connectButton = $("connect");
   const status = $("status");
   const storageKey = "jc.live-chat.session.v1";
@@ -51,6 +53,7 @@
   function setBusy(value) {
     busy = value;
     sendButton.disabled = value || !sessionId;
+    planButton.disabled = value || !sessionId;
     connectButton.disabled = value;
     promptInput.disabled = value || !sessionId;
     $("newChat").disabled = value;
@@ -173,6 +176,43 @@
     } catch (error) {
       addMessage("assistant", "I couldn't complete that request. " + (error.message || "Please check the backend and API key, then try again."));
       setStatus(error.message || "Request failed.", "error");
+    } finally {
+      setBusy(false);
+      promptInput.focus();
+    }
+  });
+  planButton.addEventListener("click", async () => {
+    const raw = promptInput.value.trim();
+    if (!raw || !sessionId || busy) return;
+    addMessage("user", "[Plan request] " + raw);
+    promptInput.value = "";
+    setBusy(true);
+    setStatus("JC is creating a reviewable plan…");
+    try {
+      const result = await request("/api/agent/plan", {
+        method: "POST",
+        body: JSON.stringify({
+          session_id: sessionId,
+          goal: raw,
+          language: language.value,
+          model: $("model").value,
+        }),
+      });
+      const plan = result.plan;
+      const lines = [
+        "PLAN SAVED · " + result.task_id,
+        plan.title,
+        plan.summary,
+        "",
+        ...plan.steps.map((step) => step.id + ". [" + step.agent + "] " + step.title + "\\n   " + step.description),
+        "",
+        "Approval required before execution. No external actions were performed.",
+      ];
+      addMessage("assistant", lines.join("\\n"));
+      setStatus("Plan saved for review · " + plan.steps.length + " steps · " + (result.tokens_used ?? "unknown") + " tokens", "ok");
+    } catch (error) {
+      addMessage("assistant", "I couldn't create the plan. " + (error.message || "Check the backend and AI provider settings."));
+      setStatus(error.message || "Plan request failed.", "error");
     } finally {
       setBusy(false);
       promptInput.focus();
