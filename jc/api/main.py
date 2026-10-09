@@ -23,6 +23,7 @@ Base.metadata.create_all(bind=engine)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="JC Executive AI",
@@ -33,8 +34,8 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=["http://127.0.0.1:8000", "http://localhost:8000"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -67,6 +68,10 @@ async def shutdown_event():
     if runtime_supervisor:
         await runtime_supervisor.shutdown()
     logger.info("Shutdown complete")
+
+
+if (project_root / "web").is_dir():
+    app.mount("/web", StaticFiles(directory=project_root / "web", html=True), name="web")
 
 
 # Import and include routers
