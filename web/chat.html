@@ -204,11 +204,11 @@
         plan.title,
         plan.summary,
         "",
-        ...plan.steps.map((step) => step.id + ". [" + step.agent + "] " + step.title + "\\n   " + step.description),
+        ...plan.steps.map((step) => step.id + ". [" + step.agent + "] " + step.title + "\n   " + step.description),
         "",
         "Approval required before execution. No external actions were performed.",
       ];
-      addMessage("assistant", lines.join("\\n"));
+      addMessage("assistant", lines.join("\n"));
       setStatus("Plan saved for review · " + plan.steps.length + " steps · " + (result.tokens_used ?? "unknown") + " tokens", "ok");
     } catch (error) {
       addMessage("assistant", "I couldn't create the plan. " + (error.message || "Check the backend and AI provider settings."));
