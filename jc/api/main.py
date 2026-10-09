@@ -81,6 +81,7 @@ from jc.api.routes import (
     autonomy,
     production,
     audit,
+    agent,
 )
 
 app.include_router(health.router, prefix="/api/health", tags=["Health"])
@@ -93,6 +94,7 @@ app.include_router(decisions.router, prefix="/api/decisions", tags=["Decisions"]
 app.include_router(autonomy.router, prefix="/api/autonomy", tags=["Autonomy"])
 app.include_router(production.router, prefix="/api/production", tags=["Production"])
 app.include_router(audit.router, prefix="/api/audit", tags=["Audit"])
+app.include_router(agent.router, prefix="/api/agent", tags=["Agent"])
 
 
 # Root endpoint
@@ -113,6 +115,7 @@ async def root():
             "autonomy": "/api/autonomy",
             "production": "/api/production",
             "audit": "/api/audit",
+            "agent_planning": "/api/agent/plan",
         },
     }
 

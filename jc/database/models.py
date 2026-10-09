@@ -28,7 +28,7 @@ class SessionModel(Base):
     last_activity = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="active")  # active, paused, ended
     context = Column(JSON, default=dict)
-    metadata = Column(JSON, default=dict)
+    metadata_json = Column("metadata", JSON, default=dict)
 
     messages = relationship("MessageModel", back_populates="session")
     tasks = relationship("TaskModel", back_populates="session")
@@ -43,7 +43,7 @@ class MessageModel(Base):
     role = Column(String)  # user, assistant, system
     content = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    metadata = Column(JSON, default=dict)
+    metadata_json = Column("metadata", JSON, default=dict)
     token_count = Column(Integer, default=0)
 
     session = relationship("SessionModel", back_populates="messages")
@@ -155,7 +155,7 @@ class BackupModel(Base):
     checksum = Column(String)  # SHA-256 hash
     status = Column(String, default="valid")  # valid, invalid, corrupted
     restore_tested = Column(Boolean, default=False)
-    metadata = Column(JSON, default=dict)
+    metadata_json = Column("metadata", JSON, default=dict)
 
 
 class HealthCheckModel(Base):
