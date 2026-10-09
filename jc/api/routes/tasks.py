@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime
 from uuid import uuid4
 from jc.database.session import get_db
@@ -22,7 +22,7 @@ class TaskCreate(BaseModel):
 
 
 class TaskUpdate(BaseModel):
-    status: Optional[str] = None
+    status: Optional[Literal["pending", "pending_approval", "cancelled"]] = None
     priority: Optional[str] = None
     result: Optional[dict] = None
 
@@ -111,15 +111,10 @@ async def execute_task(task_id: str, db: Session = Depends(get_db)):
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    task.status = "executing"
-    task.started_at = datetime.utcnow()
-    db.commit()
-    
-    return {
-        "id": task.id,
-        "status": "executing",
-        "started_at": task.started_at.isoformat(),
-    }
+    raise HTTPException(
+        status_code=501,
+        detail="Task execution is not implemented yet. The task remains saved and no external action was performed.",
+    )
 
 
 @router.post("/{task_id}/cancel")
