@@ -5,7 +5,9 @@ on:
     paths:
       - "jc/core/ai_provider.py"
       - "jc/database/models.py"
+      - "jc/core/agent_planner.py"
       - "tests/test_ai_provider.py"
+      - "tests/test_agent_planner.py"
       - "tests/test_database_models.py"
       - ".github/workflows/test-ai-provider.yml"
   push:
@@ -26,4 +28,4 @@ jobs:
       - name: Install focused test dependencies
         run: python -m pip install --upgrade pip pytest requests sqlalchemy pydantic-settings
       - name: Run provider adapter tests
-        run: python -m pytest tests/test_ai_provider.py tests/test_database_models.py -v
+        run: python -m pytest tests/test_ai_provider.py tests/test_database_models.py tests/test_agent_planner.py -v
