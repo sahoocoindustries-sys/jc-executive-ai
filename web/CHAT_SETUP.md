@@ -12,7 +12,7 @@ From the repository root, create or edit the .env file (never commit this file):
 
 Keep the key only in the backend environment. Do not paste it into web/chat.html, browser developer tools, or GitHub.
 
-The default chat model is gemini-2.5-flash. OpenAI models can be selected by changing the model value in the frontend after configuring OPENAI_API_KEY. Ollama requires a locally running Ollama service and a model installed on the computer.
+The default chat model is gemini-2.5-flash. Choose Gemini or OpenAI in the chat model selector after configuring the matching backend API key. Ollama requires a locally running Ollama service and a model installed on the computer.
 
 ## 2. Install and start the backend
 
