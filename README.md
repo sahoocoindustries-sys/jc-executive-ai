@@ -56,7 +56,7 @@ Planning is not execution. The app does not yet have a governed tool registry or
 
 ## Tests
 
-       python -m pip install pytest requests sqlalchemy pydantic-settings
+       python -m pip install pytest requests sqlalchemy pydantic-settings fastapi
        python -m pytest tests/ -v
 
 GitHub Actions also runs the focused provider, database mapping, and planner validation tests. Review the latest checks on the pull request before merging.
