@@ -88,7 +88,7 @@ async def add_message(
         session_id=session_id,
         role=message.role,
         content=message.content,
-        metadata=message.metadata,
+        metadata_json=message.metadata,
     )
     db.add(msg)
     session.updated_at = datetime.utcnow()
