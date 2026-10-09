@@ -106,14 +106,21 @@
         const saved = JSON.parse(stored);
         if (saved.base === apiBase() && saved.sessionId) {
           sessionId = saved.sessionId;
-          await loadHistory();
-          promptInput.disabled = false;
-          sendButton.disabled = false;
-          setStatus("Connected · restored saved conversation", "ok");
-          return;
+          try {
+            await loadHistory();
+            promptInput.disabled = false;
+            sendButton.disabled = false;
+            setStatus("Connected · restored saved conversation", "ok");
+            return;
+          } catch (_) {
+            // If the saved backend session no longer exists, create a clean session.
+            localStorage.removeItem(storageKey);
+            sessionId = "";
+          }
         }
       } catch (_) {
         localStorage.removeItem(storageKey);
+        sessionId = "";
       }
     }
     const created = await request("/api/sessions/", {
