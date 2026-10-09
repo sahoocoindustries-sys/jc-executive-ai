@@ -1,40 +1,48 @@
-# JC Live Chat — local setup
+# JC Live Agent Planner — Windows setup
 
-This page connects to the existing FastAPI backend. It is a local-first developer preview, not a public production deployment.
+This setup runs JC locally on your Windows PC. It provides real model-backed chat and a supervised planner that saves task plans to the database. It does not yet perform external actions autonomously.
 
-## 1. Configure the AI provider
+## Option A: Docker Desktop (recommended)
 
-From the repository root, create or edit the .env file (never commit this file):
+1. Install and start Docker Desktop for Windows.
+2. In the repository folder, copy `.env.example` to `.env`.
+3. Open `.env` and set `GEMINI_API_KEY` to your own key. Keep this file private; never commit it or paste the key into the browser.
+4. Open PowerShell in the repository folder and run:
 
-    GEMINI_API_KEY=your_real_gemini_api_key
-    HOST=127.0.0.1
-    PORT=8000
+       docker compose up --build -d
+       docker compose ps
 
-Keep the key only in the backend environment. Do not paste it into web/chat.html, browser developer tools, or GitHub.
+5. Open `http://127.0.0.1:8000/web/chat.html` in your browser. Click **Connect**, then try chat or **Plan task**.
+6. Check the service logs with `docker compose logs -f jc`. Stop the app with `docker compose down`.
 
-The default chat model is gemini-2.5-flash. Choose Gemini or OpenAI in the chat model selector after configuring the matching backend API key. Ollama requires a locally running Ollama service and a model installed on the computer.
+The Docker Compose port is bound to 127.0.0.1, so it is not intentionally exposed to other devices on your network. Keep that local-only setting until authentication is implemented.
 
-## 2. Install and start the backend
+## Option B: Run Python directly
 
-Use a supported Python virtual environment, then install the repository's dependencies and start the FastAPI app:
+Use Python 3.11 or newer. In PowerShell at the repository root:
 
-    python -m venv .venv
-    .venv\\Scripts\\Activate.ps1
-    python -m pip install -r requirements.txt
-    uvicorn jc.api.main:app --host 127.0.0.1 --port 8000
+       py -3.11 -m venv .venv
+       .venv\\Scripts\\Activate.ps1
+       python -m pip install -r requirements.txt
+       Copy-Item .env.example .env
 
-If dependency installation fails, do not skip the error; fix the dependency list or use the project's documented container workflow first.
+Edit `.env` to add your real Gemini API key, then run:
 
-## 3. Open the chat
+       python -m uvicorn jc.api.main:app --host 127.0.0.1 --port 8000
 
-Open web/chat.html in a browser. Leave the backend address set to http://127.0.0.1:8000, choose a reply language, and click Connect. Send a message to test the model connection.
+Open `http://127.0.0.1:8000/web/chat.html`.
 
-The page creates a backend session and restores its history on later visits using a session ID saved in this browser. Messages are stored in the backend database. Clearing browser storage loses the saved session pointer but does not delete database records.
+## How to use the planner
 
-## Current boundaries
+- Click **Connect** to create or restore a conversation.
+- Use **Send** for ordinary model-backed chat.
+- Enter a goal and click **Plan task** to ask JC to break it into up to eight specialist-assigned steps.
+- JC saves the plan in the database with status `pending_approval`. The UI clearly states that no external actions were performed.
 
-- This connects text chat to real model inference; it does not make JC a general autonomous agent yet.
-- The backend's session endpoints currently have no authentication. Keep the server bound to loopback and do not expose it to the public internet.
-- Tool execution and streaming endpoints intentionally report that they are not implemented.
-- Provider usage can cost money. No exact per-request cost is calculated in this build.
-- Voice, web search, GitHub write access, Netlify deployment, Windows automation, and 24/7 scheduling remain separate implementation stages.
+## Current limitations — important
+
+- The planner generates and saves a proposed plan; it does not execute its steps yet.
+- Voice, live web search, GitHub operations, Netlify deployment, Windows control, background scheduling, payment/bank integrations, and a real multi-agent execution engine are not yet implemented.
+- API endpoints currently do not require user authentication. Keep the server bound to localhost and do not publish this backend or forward port 8000 publicly.
+- AI provider requests may cost money. There is no exact per-request price calculation in the current build.
+- If Docker fails, run `docker compose logs --no-color jc` and review the first error rather than ignoring it.
