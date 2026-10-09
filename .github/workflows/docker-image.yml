@@ -2,17 +2,36 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main", "feature/jc-real-ai-inference" ]
+    branches: ["main", "feature/jc-real-ai-inference"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
-  build:
-
+  build-and-smoke-test:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - uses: actions/checkout@v4
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag jc-smoke:ci
+      - name: Start the app container
+        run: |
+          docker run -d --name jc-smoke -p 127.0.0.1:8000:8000 \
+            -e DATABASE_URL=sqlite:////tmp/jc-smoke.db \
+            -e GEMINI_API_KEY= -e OPENAI_API_KEY= jc-smoke:ci
+      - name: Verify the API starts and responds
+        run: |
+          for attempt in $(seq 1 35); do
+            if docker exec jc-smoke python -c "import requests; requests.get('http://127.0.0.1:8000/api/health/', timeout=2).raise_for_status()"; then
+              echo "JC API health check passed"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs jc-smoke
+          exit 1
+      - name: Show app logs on failure
+        if: failure()
+        run: docker logs jc-smoke || true
+      - name: Clean up container
+        if: always()
+        run: docker rm -f jc-smoke || true
